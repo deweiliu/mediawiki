@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  mediawiki:
+    image: deweiliu/mediawiki:latest
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    container_name: mediawiki-container
+    ports:
+      - 8080:80

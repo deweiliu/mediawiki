@@ -1,0 +1,44 @@
+pipeline {
+    agent {
+        label 'deployer-slave-amazon-linux'
+    }
+    
+    options {
+        timeout(time: 90, unit: 'MINUTES')
+        timestamps ()
+    }
+
+    stages {
+        stage('Wait for Stack Ready'){
+            steps{
+                sh(script: 'aws cloudformation wait stack-update-complete --region eu-west-2 --stack-name Mediawiki', returnStatus: true)
+            }
+        }
+        
+        stage('CDK Synth'){
+            steps{
+                dir('cdk'){
+                    sh '''
+                    npm install;
+                    npm run synth;
+                    '''
+                }
+            }
+        }        
+        stage('CDK Deploy'){
+            steps{
+                dir('cdk-corrected'){
+                    sh '''
+                    npm install;
+                    npm run deploy;
+                    '''
+                }
+            }
+        }
+    }
+    post { 
+        always { 
+            cleanWs()
+        }
+    }
+}
