@@ -10,6 +10,7 @@
     "test": "jest",
     "deploy": "cdk deploy --require-approval=never",
     "destroy": "cdk destroy",
+    "force-destroy": "cdk destroy --force",
     "synth": "cdk synth --version-reporting false",
     "synth-yaml": "cdk synth > cdk.out/template.yml"
   },
