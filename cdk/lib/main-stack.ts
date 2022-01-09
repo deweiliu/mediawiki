@@ -31,7 +31,6 @@ export class CdkStack extends cdk.Stack {
     const fsSecurityGroup = new ec2.SecurityGroup(this, 'FsSecurityGroup', { vpc: get.vpc });
     fsSecurityGroup.connections.allowFrom(get.clusterSecurityGroup, ec2.Port.tcp(2049), `Allow traffic from ${get.appName} to the File System`);
 
-    get.clusterSecurityGroup.connections.allowFromAnyIpv4(ec2.Port.allTraffic());
     const subnets: ISubnet[] = [];
     [...Array(props.maxAzs).keys()].forEach(azIndex => {
       const subnet = new PublicSubnet(this, `Subnet` + azIndex, {
@@ -103,7 +102,7 @@ export class CdkStack extends cdk.Stack {
     const container = taskDefinition.addContainer('Container', {
       image: ecs.ContainerImage.fromRegistry(get.dockerImage),
       containerName: `${get.appName}-container`,
-      memoryReservationMiB: 512,
+      memoryReservationMiB: 32,
       portMappings: [{ containerPort: 80, hostPort: get.hostPort, protocol: ecs.Protocol.TCP }],
       logging: new ecs.AwsLogDriver({ streamPrefix: get.appName }),
     });
@@ -112,10 +111,12 @@ export class CdkStack extends cdk.Stack {
       // { containerPath: '/var/www/html/LocalSettings.php', readOnly: false, sourceVolume: 'settings-php' },
     );
 
+    const desiredCount = 1;
     const service = new ecs.Ec2Service(this, 'Service', {
       cluster: get.cluster,
       taskDefinition,
-      desiredCount: 1,
+      desiredCount,
+      minHealthyPercent: desiredCount === 1 ? 0 : 50,
     });
 
     // Load balancer configuration
