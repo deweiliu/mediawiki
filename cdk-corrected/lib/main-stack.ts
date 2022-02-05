@@ -1,12 +1,13 @@
 /// <reference path="../node_modules/jest-haste-map/build/crawlers/node.d.ts" />
-import * as cdk from '@aws-cdk/core';
-import * as cfninc from '@aws-cdk/cloudformation-include';
+import { Construct } from 'constructs';
+import { Stack, cloudformation_include as cfninc } from 'aws-cdk-lib';
+
 import template from '../../cdk/cdk.out/Mediawiki.template.json';
 
 const fs = require("fs");
 
-export class CdkStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string) {
+export class CdkStack extends Stack {
+  constructor(scope: Construct, id: string) {
     super(scope, id, { tags: { service: 'mediawiki' } });
 
     const volumes: any[] = template.Resources.TaskDefinitionB36D86D9.Properties.Volumes;
@@ -17,6 +18,10 @@ export class CdkStack extends cdk.Stack {
       volume.EFSVolumeConfiguration = volume.EfsVolumeConfiguration;
       delete volume.EfsVolumeConfiguration;
     });
+
+    delete (template as any).Parameters.BootstrapVersion;
+    delete (template as any).Rules.CheckBootstrapVersion;
+
     fs.writeFileSync("./template.json", JSON.stringify(template, null, 2));
 
     new cfninc.CfnInclude(this, 'Template', {
