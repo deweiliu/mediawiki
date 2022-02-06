@@ -142,7 +142,7 @@ export class CdkStack extends Stack {
         enabled: true,
         interval: Duration.minutes(1),
         path: '/',
-        healthyHttpCodes: '200',
+        healthyHttpCodes: '200,301',
         healthyThresholdCount: 2,
         unhealthyThresholdCount: 5,
       },
