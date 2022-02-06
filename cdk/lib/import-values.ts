@@ -32,6 +32,7 @@ export class ImportValues extends Construct implements CdkStackProps {
     public fsId: string;
     public fsArn: string;
     public dbSecurityGroup: string;
+    public instanceCount: number;
 
     constructor(scope: Construct, props: CdkStackProps) {
         super(scope, 'ImportValues')
@@ -46,6 +47,7 @@ export class ImportValues extends Construct implements CdkStackProps {
         this.priority = this.appId * 10;
         this.dnsName = `${this.dnsRecord}.${this.domain}`;
         this.hostPort = this.appId * 1000;
+        this.instanceCount = props.instanceCount;
 
         this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(scope, 'HostedZone', {
             hostedZoneId: Fn.importValue('DLIUCOMHostedZoneID'),

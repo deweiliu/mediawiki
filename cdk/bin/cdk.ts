@@ -10,6 +10,7 @@ new CdkStack(app, 'Mediawiki', {
   domain: 'dliu.com',
   dnsRecord: 'dev',
   appName: 'mediawiki',
+  instanceCount: 2,
   tags: { service: 'mediawiki' },
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,

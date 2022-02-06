@@ -22,6 +22,7 @@ export interface CdkStackProps extends StackProps {
   domain: string;
   dnsRecord: string;
   appName: string;
+  instanceCount: number;
 }
 export class CdkStack extends Stack {
   constructor(scope: Construct, id: string, props: CdkStackProps) {
@@ -71,32 +72,17 @@ export class CdkStack extends Stack {
       path: '/images',
       posixUser: { uid: posixId, gid: posixId },
     });
-    // const accessPoint2 = new AccessPoint(this, 'GalleryAccessPoint', {
-    //   fileSystem,
-    //   createAcl: { ownerGid: posixId, ownerUid: posixId, permissions: "755" },
-    //   path: '/LocalSettings.php',
-    //   posixUser: { uid: posixId, gid: posixId },
-    // });
 
     // ECS resources
     const taskDefinition = new ecs.Ec2TaskDefinition(this, 'TaskDefinition', {
       networkMode: ecs.NetworkMode.BRIDGE,
-      volumes: [
-        {
-          name: 'images-volume', efsVolumeConfiguration: {
-            fileSystemId: get.fsId,
-            transitEncryption: 'ENABLED',
-            authorizationConfig: { accessPointId: accessPoint1.accessPointId, iam: 'ENABLED' },
-          }
-        },
-        // {
-        //   name: 'settings-php', efsVolumeConfiguration: {
-        //     fileSystemId: get.fsId,
-        //     transitEncryption: 'ENABLED',
-        //     authorizationConfig: { accessPointId: accessPoint2.accessPointId, iam: 'ENABLED' },
-        //   }
-        // },
-      ],
+      volumes: [{
+        name: 'images-volume', efsVolumeConfiguration: {
+          fileSystemId: get.fsId,
+          transitEncryption: 'ENABLED',
+          authorizationConfig: { accessPointId: accessPoint1.accessPointId, iam: 'ENABLED' },
+        }
+      },],
     });
 
     taskDefinition.addToTaskRolePolicy(new iam.PolicyStatement({
@@ -116,7 +102,7 @@ export class CdkStack extends Stack {
         wgMetaNamespace: ssm.StringParameter.valueForStringParameter(this, "/mediawiki/config/wgMetaNamespace"),
         wgServer: ssm.StringParameter.valueForStringParameter(this, "/mediawiki/config/wgServer"),
         DB_SERVER: ssm.StringParameter.valueForStringParameter(this, "/core/mysql/endpoint"),
-        wgDBprefix: ssm.StringParameter.valueForStringParameter(this, "/core/mysql/wgDBprefix"),
+        wgDBprefix: ssm.StringParameter.valueForStringParameter(this, "/mediawiki/config/wgDBprefix"),
       },
       secrets: {
         DB_USERNAME: ecs.Secret.fromSsmParameter(ssm.StringParameter.fromSecureStringParameterAttributes(this, 'DB_USERNAME',
@@ -135,15 +121,12 @@ export class CdkStack extends Stack {
     });
     container.addMountPoints(
       { containerPath: '/var/www/html/images', readOnly: false, sourceVolume: 'images-volume' },
-      // { containerPath: '/var/www/html/LocalSettings.php', readOnly: false, sourceVolume: 'settings-php' },
     );
 
-    const desiredCount = 1;
     const service = new ecs.Ec2Service(this, 'Service', {
       cluster: get.cluster,
       taskDefinition,
-      desiredCount,
-      minHealthyPercent: desiredCount === 1 ? 0 : 50,
+      desiredCount: get.instanceCount,
     });
 
     // Load balancer configuration
