@@ -8,7 +8,7 @@ new CdkStack(app, 'Mediawiki', {
   maxAzs: 2,
   appId: 11,
   domain: 'dliu.com',
-  dnsRecord: 'wiki',
+  dnsRecord: 'dev',
   appName: 'mediawiki',
   tags: { service: 'mediawiki' },
   /* If you don't specify 'env', this stack will be environment-agnostic.
