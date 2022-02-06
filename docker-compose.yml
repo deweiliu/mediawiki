@@ -6,6 +6,10 @@ services:
     build:
       context: ./src
       dockerfile: Dockerfile
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
     container_name: mediawiki-container
     ports:
       - 8080:80
