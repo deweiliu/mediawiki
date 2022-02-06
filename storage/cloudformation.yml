@@ -1,22 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Parameters:
-  DBUsername:
-    NoEcho: "true"
-    Description: Username for MySQL database access
-    Type: String
-    MinLength: "1"
-    MaxLength: "16"
-    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
-    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
-  DBPassword:
-    NoEcho: "true"
-    Description: Password for MySQL database access
-    Type: String
-    MinLength: "8"
-    MaxLength: "41"
-    ConstraintDescription: must contain only alphanumeric characters.
 Resources:
-  # EFS
   FileSystem:
     Type: AWS::EFS::FileSystem
     Properties:
@@ -26,61 +9,6 @@ Resources:
       FileSystemTags:
         - Key: Name
           Value: mediawiki
-
-  # RDS
-  RDSCluster:
-    Type: AWS::RDS::DBCluster
-    Properties:
-      MasterUsername: !Ref DBUsername
-      MasterUserPassword: !Ref DBPassword
-      DatabaseName: mediawiki
-      Engine: aurora-mysql
-      EngineMode: serverless
-      StorageEncrypted: true
-      ScalingConfiguration:
-        AutoPause: true
-        MaxCapacity: 2
-        MinCapacity: 1
-        SecondsUntilAutoPause: 300
-      DBSubnetGroupName: !Ref DBSubnetGroup
-      VpcSecurityGroupIds:
-        - !Ref DBSecurityGroup
-
-  DBSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Mediawiki Database Security Group
-      VpcId: !ImportValue Core-Vpc
-
-  DBSubnetGroup:
-    Type: AWS::RDS::DBSubnetGroup
-    Properties:
-      DBSubnetGroupDescription: Mediawiki DB Subnet Group
-      DBSubnetGroupName: mediawiki-db-subnet-group
-      SubnetIds:
-        - !Ref DBSubnet1
-        - !Ref DBSubnet2
-  DBSubnet1:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !ImportValue Core-Vpc
-      CidrBlock: 10.0.11.0/28
-      MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select
-        - 0
-        - !GetAZs
-          Ref: "AWS::Region"
-  DBSubnet2:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !ImportValue Core-Vpc
-      CidrBlock: 10.0.11.16/28
-      MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select
-        - 1
-        - !GetAZs
-          Ref: "AWS::Region"
-
 Outputs:
   FileSystemID:
     Value: !Ref FileSystem
@@ -90,7 +18,3 @@ Outputs:
     Value: !GetAtt FileSystem.Arn
     Export:
       Name: Mediawiki-EfsArn
-  DBSecurityGroup:
-    Value: !GetAtt DBSecurityGroup.GroupId
-    Export:
-      Name: Mediawiki-DbSecurityGroup

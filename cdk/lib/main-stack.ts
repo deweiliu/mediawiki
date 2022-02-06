@@ -30,11 +30,6 @@ export class CdkStack extends Stack {
 
     const get = new ImportValues(this, props);
 
-    // RDS configuration
-    const dbSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, 'DBSecurityGroup', get.dbSecurityGroup);
-    dbSecurityGroup.connections.allowFrom(get.clusterSecurityGroup, ec2.Port.tcp(3306), `Allow traffic from ${get.appName} to the RDS`);
-
-    // EFS configuration
     const fsSecurityGroup = new ec2.SecurityGroup(this, 'FsSecurityGroup', { vpc: get.vpc });
     fsSecurityGroup.connections.allowFrom(get.clusterSecurityGroup, ec2.Port.tcp(2049), `Allow traffic from ${get.appName} to the File System`);
 

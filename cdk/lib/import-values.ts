@@ -31,7 +31,6 @@ export class ImportValues extends Construct implements CdkStackProps {
     public hostPort: number;
     public fsId: string;
     public fsArn: string;
-    public dbSecurityGroup: string;
     public instanceCount: number;
 
     constructor(scope: Construct, props: CdkStackProps) {
@@ -86,7 +85,6 @@ export class ImportValues extends Construct implements CdkStackProps {
 
         this.fsId = Fn.importValue('Mediawiki-EfsId');
         this.fsArn = Fn.importValue('Mediawiki-EfsArn');
-        this.dbSecurityGroup = Fn.importValue('Mediawiki-DbSecurityGroup');
     }
 
 
